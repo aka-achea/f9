@@ -61,7 +61,7 @@ def screenshot(srv,w,step):
     auto.screenshot(srv+"_"+w+"_"+step+".png",region=(0,0, 1000, 900))
 
 def WSOE():
-    auto.click(150,150,button='left')
+    # auto.click(150,150,button='left')
     time.sleep(1)
     auto.typewrite('\n') #-> system config
     time.sleep(1)
@@ -124,7 +124,7 @@ def WSOE():
     g9_reboot()
 
 def VSOE():
-    auto.click(150,150,button='left')
+    # auto.click(150,150,button='left')
     time.sleep(1)
     auto.typewrite('\n') #-> system config
     time.sleep(1)
@@ -210,7 +210,7 @@ def VSOE():
 
 def LSOE():
     w = 'LSOE'
-    auto.click(150,150,button='left')
+    # auto.click(150,150,button='left')
     time.sleep(1)
     auto.typewrite('\n') #-> system config
     time.sleep(1)
