@@ -306,13 +306,13 @@ def selectversion():
         print("Stop")
 
 if __name__=='__main__':
-        wp = os.path.dirname(os.path.realpath(__file__))
-        os.chdir(wp)
-        print("Input your BIOS version")
-        print("w=Windows ; l=Linux ; v=VMware")
-        BIOS = input(">>")
-        srv = input("Input server name>>  ")
-        selectversion()
+    wp = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(wp)
+    print("Input your BIOS version")
+    print("w=Windows ; l=Linux ; v=VMware")
+    BIOS = input(">>")
+    srv = input("Input server name>>  ")
+    selectversion()
 
 """
 Change log:
