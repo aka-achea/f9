@@ -1,20 +1,20 @@
-# !/usr/bin/python
+# !/usr/bin/python3
 # coding:utf-8
-# python 3
 # tested in Win
 
 import re,subprocess,os
 
 
-
 plink = r'C:\D\_Tool\plink.exe'
-pcmd = r'E:\reviewenclosure\puttycmd.txt'
-enlist = r'E:\reviewenclosure\enlist.txt'
-en = r'E:\reviewenclosure\en.log'
-out = r'E:\reviewenclosure\en-out.log'
+pcmd = r'E:\ptool\enclosure\puttycmd.txt'
+enlist = r'E:\ptool\enclosure\enlist.txt'
+en = r'E:\ptool\enclosure\en.log'
+out = r'E:\ptool\enclosure\en-out.log'
 
-os.remove(en)
-os.remove(out)
+if os.path.exists(en):
+    os.remove(en)
+if os.path.exists(out):
+    os.remove(out)
 
 with open(enlist,'r') as l:
     for x in l.readlines():
