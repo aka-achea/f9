@@ -30,7 +30,7 @@ with open(out,'w') as o:
     with open(en,'r') as f:
         for i in f.readlines():
             if re.search('\[SCRIPT MODE\]> show server names',i):
-                print(i.split()[0],file=o)
+                print(i.split()[0][:-3],file=o)
             elif re.search('Totals',i):
                 print(i.split('\n')[0],file=o)
                 print('='*10,file=o)
