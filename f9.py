@@ -8,10 +8,15 @@ Support HP BL460 G9, BL660 G9
 import time , os
 import pyautogui as auto
 
+
+wp = os.path.dirname(os.path.realpath(__file__))
+
 g10sys = 'g10sys'
 g9sys = 'sys'
-f9 = 'F9-old'
+f9 = 'F9'
 flom = 'FLOM'
+g10power = 'g10power'
+g10bios = 'g10bios'
 
 os_dict = {
     'w':'Windows (WSOE)',
@@ -19,39 +24,34 @@ os_dict = {
     'v':'VMware (VSOE)',
     's':'Suse (SSOE)'
 }
-#sys = 'C:\\bk\\SIR\\BIOS\\sys.png'
-# f9pic = r'c:\D\GitHub\f9\F9-old.png'
- 
+
+
 auto.size()
 width, height = auto.size()
 #print(width,height)
 auto.PAUSE = 1
 
 def capture(wp,img,trys=20):    
-    pic = os.path.join(wp,img+'.png')
-    # print(pic)
+    pic = os.path.join(wp,'img',img+'.png')
+    print(pic)
     trytime = 1
     while trytime < trys:
         try:
             button = auto.locateCenterOnScreen(pic,grayscale=True)
-            time.sleep(15)
-            print('Find '+img)
+            time.sleep(3)
+            # print('Find '+img)
             #print(button)
-            auto.click(button)
+            # auto.click(button)
             break            
         except TypeError:
             time.sleep(15)
             trytime += 1
-            print(f'try to locate {img} {str(trytime)}')
+            # print(f'try to locate {img} {str(trytime)}')
             continue
     else:
-        print("Max tries reach")
+        print(f"Max tries reach, not able to locate option {img}")
         return False
-    return True
-
-#print(srv)
-#os.makedirs(srv)
-#os.chdir(srv)
+    return button
 
 
 def screenshot(srv,w,step):
@@ -315,28 +315,28 @@ class iLO4():
 
 
 class iLO5():
-    def __init__(self,srv,waitsec=3,model='blade',FLOM='no'):
+    def __init__(self,srv,waitsec=2,model='blade',FLOM='no'):
         self.interval = waitsec
         self.model = model
         self.FLOM = FLOM
         self.srv = srv
-        print(f'{self.srv} server model is {self.model} has {self.FLOM} FlexLOM installed')
+        # print(f'{self.srv} server model is {self.model} has {self.FLOM} FlexLOM installed')
 
     def go_bios(self):
-        # time.sleep(self.interval)
-        # auto.typewrite('\n') #-> system config no need, click when find sysconfig
-        time.sleep(20)  # need some time to load device
-        auto.typewrite('\n') #-> BIOS    
+        if capture(wp,g10bios):
+            auto.typewrite('\n') #-> BIOS   
+        else:
+            print('something wrong')
         
     def WSOE(self,srv):
         self.go_bios()
         w = 'WSOE'
-        time.sleep(15)
-        auto.typewrite(['\n','up'])  #-> change workload for general power efficient
-        time.sleep(3)
-        auto.typewrite(['\n','\n'])  #-> change workload for general power efficient
+        time.sleep(self.interval)
+        auto.typewrite('\n')
+        time.sleep(self.interval)
+        auto.typewrite(['up','\n','\n'])  #-> change workload for general power efficient
         step = 'workload'
-        screenshot(self.srv,w,step) 
+        screenshot(self.srv,w,step)
         time.sleep(self.interval)
         auto.typewrite(['down','\n'])  #-> system option
         time.sleep(self.interval)
@@ -344,12 +344,11 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['\n'])  #-> EMS
         time.sleep(self.interval)
-        auto.typewrite(['down','down','\n','down','\n'])  #-> serial port
+        auto.typewrite(['down','down','\n','down','\n'])  #-> serial port 9600
         step = 'EMS'
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #-> serial port
-
 
         if self.model == 'rack mounted':
             time.sleep(self.interval)
@@ -420,37 +419,205 @@ class iLO5():
         step = 'power'
         screenshot(self.srv,w,step) 
         auto.typewrite(['esc']) #->BIOS
-
-        # auto.typewrite(['esc','\n','\n'])  #-> save config
+        time.sleep(self.interval)
+        auto.press('f12')   
+        auto.typewrite(['\n','\n'])  #-> save config
         # time.sleep(self.interval)
         # auto.typewrite(['esc'])  #-> system utilites
         # time.sleep(self.interval) 
-        # auto.press('f12')    
-
-
-    def VSOE(self,srv):
-        self.go_bios()
-        time.sleep(self.interval)
-        time.sleep(self.interval)
-        #virtual max perf
 
     def LSOE(self,srv):
         self.go_bios()
-        auto.typewrite(['down','\n'])  #-> iLO option 
+        w = 'LSOE'
         time.sleep(self.interval)
-        auto.typewrite(['down','down','down','\n'])  #-> setting option 
-        time.sleep(self.interval) 
+        auto.typewrite('\n')
+        time.sleep(self.interval)
+        auto.typewrite(['up','up','\n','\n'])  #-> custom load
+        step = 'workload'
+        screenshot(self.srv,w,step)
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> system option
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> serial port
+        time.sleep(self.interval)
+        auto.typewrite(['\n'])  #-> EMS
+        time.sleep(self.interval)
+        auto.typewrite(['\n','down','down','\n'])  #-> serial port
+        step = 'EMS'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #-> serial port
 
-    def reboot(self):
-        pass
+        if self.model == 'rack mounted':
+            time.sleep(self.interval)
+            auto.typewrite(['down','\n','up','\n'])  #-> for DL serial port
+            step = 'DL serial port'
+            screenshot(self.srv,w,step) 
+            time.sleep(self.interval)
+
+        auto.typewrite(['esc']) #->system option
+        time.sleep(self.interval)
+        auto.typewrite(['up']) #->back to boot time postion
+        time.sleep(self.interval)    
+        auto.typewrite(['down','down','down','\n'])  #-> Server availability
+        time.sleep(self.interval)
+        auto.typewrite(['\n','down','\n'])  #-> disable ASR
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','\n','\n','down','\n'])  #-> disable WoL
+        step = 'WoL+ASR'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->system option
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> Processor Option
+        time.sleep(self.interval)
+        auto.typewrite(['\n','down','\n'])  #-> disable HyperThreading
+        step = 'HT'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','\n'])  #-> Virtualization Option
+        time.sleep(self.interval)
+        auto.typewrite(['\n','down','\n'])  #-> disable VT
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n','down','\n'])  #-> disable VTd
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n','down','\n'])  #-> disable SRIOV
+        step = 'virt'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> boot option
+        time.sleep(self.interval)
+        auto.typewrite(['\n','\n','down','\n','\n'])  #-> use UEFI pending reboot
+        step = 'UEFI'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> network option
+        time.sleep(self.interval)
+        auto.typewrite(['\n'])  #-> network boot option
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','down','down','down','down','\n','down','\n'])  #-> disable LOM1
+        time.sleep(self.interval)
+    
+        if self.FLOM == 'yes':
+            auto.typewrite(['down','down','down','down','\n','down','\n'])  #-> disable FLOM1 
+            time.sleep(self.interval)
+
+        step = 'NIC'
+        screenshot(self.srv,w,step) 
+        auto.typewrite(['esc','esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','\n'])  #-> power option
+        time.sleep(self.interval)   
+        auto.typewrite(['down','\n','down','down','\n'])  #-> No C-state
+        time.sleep(self.interval) 
+        auto.typewrite(['down','\n','down','down','\n'])  #-> No package state
+        time.sleep(self.interval)     
+        step = 'power'
+        screenshot(self.srv,w,step) 
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        # auto.press('f12')   
+        # auto.typewrite(['\n','\n'])  #-> save config
+
+    def VSOE(self,srv):
+        self.go_bios()
+        w = 'VSOE'
+        time.sleep(self.interval)
+        auto.typewrite('\n')
+        time.sleep(self.interval)
+        auto.typewrite(['up','up','\n','\n'])  #-> custom load        
+        step = 'workload'
+        screenshot(self.srv,w,step)
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> system option
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> serial port
+        time.sleep(self.interval)
+        auto.typewrite(['\n'])  #-> EMS
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','\n','down','\n'])  #-> serial port 9600
+        step = 'EMS'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #-> serial port
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n','down','\n'])  #-> disable embed port
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #-> system option
+        auto.typewrite(['down','down','\n'])  #-> Server availability
+        time.sleep(self.interval)
+        auto.typewrite(['\n','down','\n'])  #-> disable ASR
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','\n','\n','down','\n'])  #-> disable WoL
+        step = 'WoL+ASR'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->system option
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','down','\n'])  #-> Virtual Option
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n','down','\n'])  #-> disable VTd
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n','down','\n'])  #-> disable SRIOV
+        step = 'virt'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> boot option
+        time.sleep(self.interval)
+        auto.typewrite(['\n','\n','down','\n','\n'])  #-> use UEFI pending reboot
+        step = 'UEFI'
+        screenshot(self.srv,w,step) 
+        time.sleep(self.interval)
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','\n'])  #-> network option
+        time.sleep(self.interval)
+        auto.typewrite(['\n'])  #-> network boot option
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','down','down','down','down','\n','down','\n'])  #-> disable LOM1
+        time.sleep(self.interval)
+    
+        if self.FLOM == 'yes':
+            auto.typewrite(['down','down','down','down','\n','down','\n'])  #-> disable FLOM1 
+            time.sleep(self.interval)
+
+        step = 'NIC'
+        screenshot(self.srv,w,step) 
+        auto.typewrite(['esc','esc']) #->BIOS
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','\n'])  #-> power option
+        time.sleep(self.interval)   
+        auto.typewrite(['down','\n','down','down','\n'])  #-> No C-state
+        time.sleep(self.interval) 
+        auto.typewrite(['down','\n','down','down','\n'])  #-> No package state
+        time.sleep(self.interval)     
+        step = 'power'
+        screenshot(self.srv,w,step) 
+        auto.typewrite(['esc']) #->BIOS
+        time.sleep(self.interval)
+        # auto.press('f12')   
+        # auto.typewrite(['\n','\n'])  #-> save config
+
 
 def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
     if ilo == '4':
         ilo = iLO4()
-        img = g9sys
+        sysconf = g9sys
     elif ilo == '5':
         ilo = iLO5(srv=srv,model=model,FLOM=FLOM)
-        img = g10sys
+        sysconf = g10sys
     else:
         pass
 
@@ -458,12 +625,14 @@ def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
 
     buttonf9 = capture(wp,f9)
     if buttonf9:
+        auto.click(buttonf9)
         auto.press('f9')
     else:
         exit()
 
-    buttonsys = capture(wp,img)
+    buttonsys = capture(wp,sysconf)
     if buttonsys:
+        auto.typewrite('\n')
         if osv == "w":
             ilo.WSOE(srv)
         elif osv == "l":
@@ -472,45 +641,68 @@ def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
             ilo.VSOE(srv)
         else:
             print("Wrong Input")
-        print("BIOS Configuration Complete")
     else:
         exit()
 
+
 def main():
-    wp = os.path.dirname(os.path.realpath(__file__))
     os.chdir(wp)
-    ilo = input('iLO 4 or 5 ?>> ')
-    print("w=Windows ; l=Linux ; v=VMware >>")
-    osv = input("Select your OS version >>")
-    srv = input("Input server name >>  ")
-    model = input('Rack(d) or Blade(b) (default b)>> ')
-    if model == '' or model == 'b':
-        model = 'blade'
-    elif model == 'd':
-        model = 'rack mounted'
+    ilo = input('Gen9 or Gen 10 ? (default 10) >>>>')
+    if ilo == '' or ilo == '10': 
+        ilo = '5'
+    elif ilo == '9':
+        ilo = '4'
     else:
         print('invalid input')
         exit()
-    FLOM = input('Additional FlexLOM card installed ? (Y or N default N) >>')
-    if FLOM == '' or FLOM == 'N' or FLOM == 'n':
+
+    print("w=Windows ; l=Redhat/Suse ; v=VMware ")
+    osv = input("Select your OS version (default: v) >>>>")
+    if osv == 'v' or osv == '':
+        model = 'blade'
         FLOM = 'no'
-    elif FLOM == 'Y' or FLOM == 'y':
-        FLOM = 'yes'
+        osv = 'v'
     else:
-        print('invalid input')
-        exit()    
-    
+        model = input('Rack(d) or Blade(b) (default b) >>>>')
+        if model == '' or model == 'b':
+            model = 'blade'
+        elif model == 'd':
+            model = 'rack mounted'
+        else:
+            print('invalid input')
+            exit()
+        FLOM = input('Additional FlexLOM card installed ? (Y or N default N) >>>>')
+        if FLOM == '' or FLOM == 'N' or FLOM == 'n':
+            FLOM = 'no'
+        elif FLOM == 'Y' or FLOM == 'y':
+            FLOM = 'yes'
+        else:
+            print('invalid input')
+            exit()    
+
+    srv = input("Input server name >>>>  ")
+    if srv == '':
+        print('Server Name missing')
+
     selectOS(wp,ilo,osv,srv,model,FLOM)
+    print("BIOS Configuration Complete")
+    # again = input('One more ? (default no) >>>>')
+
 
 if __name__=='__main__':
     try:
+        # while True:
         main()
+
+
     except KeyboardInterrupt:
         print("Stop")
 
 
 """
 Change log:
+2019.5.9 add g10 LSOE, VSOE v1.6
+2019.5.8 fix screen capture bug v1.5
 2019.5.7 create iLO4 class v1.4
 2017.12.28 add F9 press function v1.3
 2017.6.28 add screen shot funtion v1.2
@@ -520,6 +712,7 @@ Change log:
 
 Note:
 Use this tool after iLO configured
+From iLO remote console, reset the server, maximize the window and place it in up/left corner 
 SAN connection is not disabled in BIOS by this tool
-From iLO remote console, reset the server
+Suggest run this tool on jumpstation
 """
