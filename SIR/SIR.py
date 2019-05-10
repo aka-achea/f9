@@ -1,13 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #coding:utf-8
 # tested in Win
-# Version: 20190507
+# Version: 20190510
 
 
-import time,os,sys
+import time,os,sys,argparse
 from docx import Document
 from docx.shared import Inches
 import comtypes.client
+import openpyxl 
 
 """
 Serial Number:          6CU830G700
@@ -23,12 +24,6 @@ model_dict = {
     'bl10':('','ProLiant BL460c Gen10'),
     'dl10':('868703-B21','ProLiant DL380 Gen10')
 }
-
-gsite = ''
-gmodel = ''
-gdc = ''
-grack = ''
-genclosure = ''
 
 def sir(srv_dict):
     SIR = os.path.join(wp,'SIR.docx')
@@ -69,23 +64,18 @@ def sir(srv_dict):
         print('Is file being opened?')
 
     # os.startfile(SIR,'print')
+    try:
+        wdFormatPDF = 17
+        word = comtypes.client.CreateObject('Word.Application')
+        doc = word.Documents.Open(SIR)
+        doc.SaveAs(out_file, FileFormat=wdFormatPDF)
+        doc.Close()
+        word.Quit()
+    except :
+        # print(e)
+        print('PDF already created')
 
-    wdFormatPDF = 17
-    word = comtypes.client.CreateObject('Word.Application')
-    doc = word.Documents.Open(SIR)
-    doc.SaveAs(out_file, FileFormat=wdFormatPDF)
-    doc.Close()
-    word.Quit()
-
-
-def main():
-
-    global gsite
-    global gmodel
-    global gdc
-    global grack
-    global genclosure
-
+def select():
     opt = """
     1. ProLiant BL460c Gen10
     2. ProLiant DL380 Gen10
@@ -116,15 +106,9 @@ def main():
 
     if m == '1' or m == '3':
         Enclosure = input('Enclosure >>>>')
-        genclosure = Enclosure
         Bay = input('Bay number >>>>')
         if Enclosure != '' and Bay != '':
             loc = f'{loc}/{Enclosure}/Bay {Bay}'
-
-    gsite = site
-    gmodel = model
-    gdc = DC
-    grack = Rack
 
     srv_dict = {
         'name':name,
@@ -136,17 +120,65 @@ def main():
 
     return srv_dict 
 
+
+def batch():
+    xls = os.path.join(wp,'sir.xlsx')
+    wb = openpyxl.load_workbook(xls)
+    sheet = wb['hw']
+    for x in range(2,sheet.max_row+1):
+        if sheet.cell(row=x,column=9).value != 'Y':
+            site = sheet.cell(row=x,column=1).value
+            DC = sheet.cell(row=x,column=2).value
+            Rack = sheet.cell(row=x,column=3).value
+            Enclosure = sheet.cell(row=x,column=4).value
+            bay = sheet.cell(row=x,column=5).value
+            m = sheet.cell(row=x,column=6).value
+            name = sheet.cell(row=x,column=7).value
+            SN = sheet.cell(row=x,column=8).value
+        
+            if m == 'ProLiant BL460c Gen9':
+                model = model_dict['bl9']
+                loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
+            elif m == 'ProLiant BL460c Gen10':
+                model = model_dict['bl10']
+                loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
+            elif m == 'ProLiant DL380 Gen10':
+                model = model_dict['dl10']
+                loc = f'{DC}/{Rack}'
+            else:
+                print('invalid input')
+
+            srv_dict = {
+                'name':name,
+                'SN':SN,
+                'site':site,
+                'loc':loc,
+                'model':model
+            }
+            sir(srv_dict)
+            sheet.cell(row=x,column=9).value = 'Y'
+    try:
+        wb.save(xls)
+    except PermissionError as e:
+        print(e)
+        print('Is file being opened?')
+
+def main():
+    parser = argparse.ArgumentParser(description = 'SIR tool')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-b','--batch',help='SIR batch mode',action='store_true')
+    args = parser.parse_args()
+    
+    if args.batch:
+        batch()
+    else:
+        srv_dict = select()
+        sir(srv_dict)
+
+
 if __name__=='__main__':
     try:
-        while True:
-            srv_dict = main()
-            # sir(srv_dict)
-            again = input('One more ? (y or n) ')
-            if again == 'y':
-                continue
-            else:
-                break
-
+        main()
     except KeyboardInterrupt:
         print('ctrl + c')
 

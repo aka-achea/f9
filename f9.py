@@ -691,9 +691,13 @@ def main():
 
 if __name__=='__main__':
     try:
-        # while True:
-        main()
-
+        while True:
+            main()
+            again = input('One more ? (y or n) ')
+            if again == 'y':
+                continue
+            else:
+                break
 
     except KeyboardInterrupt:
         print("Stop")

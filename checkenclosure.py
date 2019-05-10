@@ -2,37 +2,44 @@
 # coding:utf-8
 # tested in Win
 
-import re,subprocess,os
+import re,subprocess,os,configparser
 
 
-plink = r'C:\D\_Tool\plink.exe'
-pcmd = r'E:\ptool\enclosure\puttycmd.txt'
-enlist = r'E:\ptool\enclosure\enlist.txt'
-en = r'E:\ptool\enclosure\en.log'
-out = r'E:\ptool\enclosure\en-out.log'
 
-if os.path.exists(en):
-    os.remove(en)
-if os.path.exists(out):
-    os.remove(out)
+confile = r'E:\ptool\enclosure\setting.txt'
+config = configparser.ConfigParser()
+config.read(confile)
+workpath = config['setting']['workpath']
+plink = config['setting']['plink']
+enlist = config['setting']['enclosurelist']
+puttycmd = os.path.join(workpath,config['setting']['puttycmd'])
+puttylog = os.path.join(workpath,config['setting']['puttylog'])
+filterlog = os.path.join(workpath,config['setting']['filterlog'])
+user = config['setting']['user']
+password = config['setting']['pass']
+
+if os.path.exists(puttylog):
+    os.remove(puttylog)
+if os.path.exists(filterlog):
+    os.remove(filterlog)
 
 with open(enlist,'r') as l:
     for x in l.readlines():
         oa = x.split('\n')[0]
-        cmd = 'echo y | '+plink+' -ssh -m '+pcmd+' -pw 1Piithon$ BELANO@'+oa+'>>'+en+' 2>&1'
-        # print(cmd)
-        # args = shlex.split(cmd)
-        # args = ['echo','y','|',plink,'-ssh','-m',pcmd,'-pw','1Piithon$','BELANO@'+oa,'>>',en,'2>&1']
-        # print(args)
+        cmd = 'echo y | {plink} -ssh -m {puttycmd} -pw {password} {user}@{oa} >> {puttylog} 2>&1'
         subprocess.run(cmd,shell=True)
 
-with open(out,'w') as o:
-    with open(en,'r') as f:
+with open(filterlog,'w') as o:
+    with open(puttylog,'r') as f:
         for i in f.readlines():
             if re.search('\[SCRIPT MODE\]> show server names',i):
-                print(i.split()[0][:-3],file=o)
+                ename = i.split()[0][:-3].upper()
+                print(ename,file=o)
             elif re.search('Totals',i):
-                print(i.split('\n')[0],file=o)
+                total = i.split('\n')[0]
+                print(total,file=o)
                 print('='*10,file=o)
+                number = total.split(' ')[1]
+
             else:
                 pass
