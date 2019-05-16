@@ -32,7 +32,7 @@ width, height = auto.size()
 auto.PAUSE = 1
 
 def capture(wp,img,trys=20):    
-    pic = os.path.join(wp,'img',img+'.png')
+    pic = os.path.join(wp,'img',img+'.bmp')
     # print(pic)
     trytime = 1
     while trytime < trys:
