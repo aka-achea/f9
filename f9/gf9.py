@@ -28,10 +28,10 @@ layout = [
     # [sg.Text('_'*36,justification='center')],          
     [sg.Text('',size=(36,2),key='output')],          
     # [sg.Text('_'*36,justification='center')],
-    [sg.Button('Go',tooltip='Click to start'), sg.Cancel(),sg.Button('Help')]      
+    [sg.Button('Go',tooltip='Click to start'), sg.Button('Stop'),sg.Button('Help')]      
 ]      
 
-window = sg.Window('BIOS Configure Tool', layout, default_element_size=(40, 1),
+window = sg.Window('BIOS Setup Tool', layout, default_element_size=(40, 1),
              grab_anywhere=False,size=(300,160),icon=os.path.join(wp,'img','f9.ico'))      
 
 
@@ -39,11 +39,31 @@ def decision(values):
     pass
 
 def main():
+    global setupbios
+    setupbios = None
+
     while True:                 # Event Loop  
         event, values = window.Read()  
         # print(event, values)
-        if event is None or event == 'Cancel':  
-            break  
+        if event is None:            
+            try:
+                setupbios.terminate()
+                setupbios.close() 
+            finally:
+                break
+
+        elif event == 'Stop':  
+            try:
+                setupbios.terminate()
+                # setupbios.join()
+                setupbios.close()
+                break
+            except AttributeError:
+                pass 
+            except ValueError:
+                window.Element('output').Update(f'job cancelled')
+
+
         elif event == 'Go':  
             if values['hw'] == hw_dict['b10']:
                 ilo = '5'
@@ -90,8 +110,8 @@ def main():
 
         elif event == 'Help':
             sg.Popup(
-                'Use this tool after iLO configured, suggest run it on jumpstation',
-                'From iLO remote console, reset the server, maximize the window and place it in up/left corner', 
+                'Suggest run it on jumpstation after iLO configured',
+                'From iLO remote console, reset the server, maximize the console window, place console window in up/left corner', 
                 'SAN connection is not disabled in BIOS by this tool',
                 title='Note'
             )

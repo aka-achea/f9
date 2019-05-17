@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #coding:utf-8
 # tested in Win
-# Version: 20190510
+# Version: 20190517
 
 
 import time,os,sys,argparse
@@ -136,10 +136,10 @@ def batch():
             name = sheet.cell(row=x,column=7).value
             SN = sheet.cell(row=x,column=8).value
         
-            if m == 'ProLiant BL460c Gen9':
+            if m == 'ProLiant BL460 Gen9':
                 model = model_dict['bl9']
                 loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
-            elif m == 'ProLiant BL460c Gen10':
+            elif m == 'ProLiant BL460 Gen10':
                 model = model_dict['bl10']
                 loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
             elif m == 'ProLiant DL380 Gen10':
@@ -167,14 +167,16 @@ def main():
     parser = argparse.ArgumentParser(description = 'SIR tool')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-b','--batch',help='SIR batch mode',action='store_true')
+    group.add_argument('-o','--one',help='SIR one mode',action='store_true')
     args = parser.parse_args()
     
     if args.batch:
         batch()
-    else:
+    elif args.one:
         srv_dict = select()
         sir(srv_dict)
-
+    else:
+        batch()
 
 if __name__=='__main__':
     try:
