@@ -55,17 +55,19 @@ def filter_log(edict):
                 if re.search('\[SCRIPT MODE\]> show server names',x):
                     ename = x.split()[0][:-3].upper()
                     if ename == 'SHPFRB009J32': ename = 'SHPFRB009J3'
-                    # if ename == ''
+                    if ename == 'OA-9457A55F5': ename = 'SICFRB005CE2'
                     print(ename,file=o)
                 elif re.search('Totals',x):
                     total = x.split('\n')[0]
                     print(total,file=o)                     
                     ndict[ename] = total.split(' ')[1]
+                    # print(edict[ename])
                     if int(ndict[ename]) != int(edict[ename]):
-                        print('!!!!!!!!!!! Blade number changed',file=o)
+                        print('!!!!!!!!!!! Blade number changed !!!!!!!!!!!',file=o)
                     else:
+                        pass
                         # print('SAME',file=o)
-                        print('='*10,file=o)
+                    print('-'*10,file=o)
                 else:
                     pass
 
