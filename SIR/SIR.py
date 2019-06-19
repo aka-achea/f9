@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #coding:utf-8
 # tested in Win
-# Version: 20190517
+# Version: 20190619
 
 
 import time,os,sys,argparse
@@ -25,7 +25,8 @@ model_dict = {
     'dl10':('868703-B21','ProLiant DL380 Gen10')
 }
 
-def sir(srv_dict):
+def sir(srv_dict:dict):
+    '''fill SIR form'''
     SIR = os.path.join(wp,'SIR.docx')
     out_file = os.path.join(wp,'%s.pdf' % srv_dict['name'])
 
@@ -75,7 +76,9 @@ def sir(srv_dict):
         # print(e)
         print('PDF already created')
 
+
 def select():
+    '''interact input'''
     opt = """
     1. ProLiant BL460c Gen10
     2. ProLiant DL380 Gen10
@@ -91,7 +94,7 @@ def select():
     elif m == '1' or m == '':
         model = model_dict['bl10']
     else:
-        pass
+        print('exit')
 
     name = input('Server Name >>>> ')
     SN = input('Serial Number >>>> ')
@@ -109,7 +112,8 @@ def select():
         Bay = input('Bay number >>>>')
         if Enclosure != '' and Bay != '':
             loc = f'{loc}/{Enclosure}/Bay {Bay}'
-
+        else:
+            print('Invalid input')
     srv_dict = {
         'name':name,
         'SN':SN,
@@ -117,11 +121,11 @@ def select():
         'loc':loc,
         'model':model
     }
-
     return srv_dict 
 
 
 def batch():
+    '''create SIR in batch'''
     xls = os.path.join(wp,'sir.xlsx')
     wb = openpyxl.load_workbook(xls)
     sheet = wb['hw']
@@ -162,6 +166,7 @@ def batch():
     except PermissionError as e:
         print(e)
         print('Is file being opened?')
+
 
 def main():
     parser = argparse.ArgumentParser(description = 'SIR tool')
