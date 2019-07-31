@@ -19,19 +19,27 @@ f9 = 'F9'
 g10bios = 'g10bios'
 
 os_dict = {
-    'w':'Windows (WSOE)',
-    'l':'Linux (LSOE)',
-    'v':'VMware (VSOE)',
-    's':'Suse (SSOE)'
+    'w':'WSOE (Windows)',
+    'l':'LSOE (Linux)',
+    'v':'VSOE (VMware)',
+    's':'SSOE (Suse)'
 }
  
+hw_dict = {
+    'r10':'HP DL380 G10',
+    'b10':'HP BL460 G10',
+    'b9':'HP BL460 G9'
+}
+
 
 auto.size()
 width, height = auto.size()
 #print(width,height)
 auto.PAUSE = 1
 
-def capture(wp,img,trys=20):    
+
+def capture(wp,img,trys=1):
+    '''Locate image and return (x,y)'''    
     pic = os.path.join(wp,'img',img+'.bmp')
     # print(pic)
     trytime = 1
@@ -52,8 +60,8 @@ def capture(wp,img,trys=20):
             print(e)
             return e
     else:
-        print(f"Max tries reach, not able to locate option {img}")
-        return f"Max tries reach, not able to locate option {img}"
+        print(f"Max tries reach")
+        return f"Max tries reach, no find {img}"
     return button
 
 
@@ -133,6 +141,7 @@ class iLO4():
         auto.typewrite('Y') #->EXIT
         time.sleep(1)
         self.reboot()
+        return 'BIOS configure complete'
 
     def VSOE(self,srv):
         w = 'VSOE'
@@ -233,6 +242,7 @@ class iLO4():
         auto.typewrite('Y') #->EXIT
         time.sleep(1)
         self.reboot()
+        return 'BIOS configure complete'
 
     def LSOE(self,srv):
         w = 'LSOE'
@@ -304,6 +314,7 @@ class iLO4():
         auto.typewrite('Y') #->EXIT
         time.sleep(1)
         self.reboot()
+        return 'BIOS configure complete'
 
     def reboot(self):
         auto.typewrite('\n') #->System config
@@ -329,8 +340,8 @@ class iLO5():
         if capture(wp,g10bios):
             auto.typewrite('\n') #-> BIOS   
         else:
-            print('something wrong')
-            return('something wrong')
+            # print('something wrong')
+            return 'something wrong'
 
         
     def WSOE(self,srv):
@@ -430,6 +441,7 @@ class iLO5():
         # time.sleep(self.interval)
         # auto.typewrite(['esc'])  #-> system utilites
         # time.sleep(self.interval) 
+        return 'BIOS configure complete'
 
     def LSOE(self,srv):
         self.go_bios()
@@ -531,6 +543,7 @@ class iLO5():
         time.sleep(self.interval)
         # auto.press('f12')   
         # auto.typewrite(['\n','\n'])  #-> save config
+        return 'BIOS configure complete'
 
     def VSOE(self,srv):
         self.go_bios()
@@ -614,6 +627,7 @@ class iLO5():
         time.sleep(self.interval)
         # auto.press('f12')   
         # auto.typewrite(['\n','\n'])  #-> save config
+        return 'BIOS configure complete'
 
 
 def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
@@ -624,7 +638,7 @@ def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
         ilo = iLO5(srv=srv,model=model,FLOM=FLOM)
         sysconf = g10sys
     else:
-        pass
+        return 'Unsupported hardware'
 
     print(f"Configuring BIOS for {os_dict[osv]}")
 
@@ -633,6 +647,7 @@ def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
         auto.click(buttonf9)
         auto.press('f9')
     else:
+        print(buttonf9)
         return buttonf9
 
     buttonsys = capture(wp,sysconf)
@@ -645,9 +660,9 @@ def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
         elif osv == "v":
             ilo.VSOE(srv)
         else:
-            print("Wrong Input")
-            return("Wrong Input")
+            return 'Unsupported OS edition'
     else:
+        print(buttonsys)
         return buttonsys
 
 
@@ -711,6 +726,7 @@ if __name__=='__main__':
 
 """
 Change log:
+2019.7.31 optimize GUI layout v1.7
 2019.5.9 add g10 LSOE, VSOE v1.6
 2019.5.8 fix screen capture bug v1.5
 2019.5.7 create iLO4 class v1.4
