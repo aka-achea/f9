@@ -2,7 +2,6 @@
 #coding:utf-8
 """
 BIOS Setup Automation Tool
-Support HP BL460 G9, BL660 G9
 """
 
 import time , os
@@ -38,7 +37,7 @@ width, height = auto.size()
 auto.PAUSE = 1
 
 
-def capture(wp,img,trys=1):
+def capture(wp,img,trys=10):
     '''Locate image and return (x,y)'''    
     pic = os.path.join(wp,'img',img+'.bmp')
     # print(pic)
@@ -352,6 +351,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['up','\n','\n'])  #-> change workload for general power efficient
         step = 'workload'
+        time.sleep(0.5)
         screenshot(self.srv,w,step)
         time.sleep(self.interval)
         auto.typewrite(['down','\n'])  #-> system option
@@ -362,6 +362,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n','down','\n'])  #-> serial port 9600
         step = 'EMS'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #-> serial port
@@ -369,6 +370,7 @@ class iLO5():
         if self.model == 'rack mounted':
             time.sleep(self.interval)
             auto.typewrite(['down','\n','up','\n'])  #-> for DL serial port
+            time.sleep(0.5)
             step = 'DL serial port'
             screenshot(self.srv,w,step) 
             time.sleep(self.interval)
@@ -381,6 +383,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','down','down','\n','down','\n'])  #-> Disable SD card
         step = 'sdcard'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->system option
@@ -389,6 +392,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n','\n','down','\n'])  #-> disable WoL
         step = 'WoL'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->system option
@@ -403,6 +407,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','\n','down','\n'])  #-> disable SRIOV
         step = 'virt'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->BIOS
@@ -411,6 +416,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['\n','\n','down','\n','\n'])  #-> use UEFI pending reboot
         step = 'UEFI'
+        time.sleep(2)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->BIOS
@@ -427,17 +433,19 @@ class iLO5():
             time.sleep(self.interval)
 
         step = 'NIC'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         auto.typewrite(['esc','esc']) #->BIOS
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n'])  #-> power option
-        time.sleep(self.interval)       
         step = 'power'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         auto.typewrite(['esc']) #->BIOS
         time.sleep(self.interval)
         auto.press('f12')   
         auto.typewrite(['\n','\n'])  #-> save config
+        
         # time.sleep(self.interval)
         # auto.typewrite(['esc'])  #-> system utilites
         # time.sleep(self.interval) 
@@ -449,8 +457,10 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite('\n')
         time.sleep(self.interval)
-        auto.typewrite(['up','up','\n','\n'])  #-> custom load
+        # auto.typewrite(['up','up','\n','\n'])  #-> custom load
+        auto.typewrite(['up','\n','\n'])  #-> custom load   
         step = 'workload'
+        time.sleep(0.5)
         screenshot(self.srv,w,step)
         time.sleep(self.interval)
         auto.typewrite(['down','\n'])  #-> system option
@@ -461,6 +471,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['\n','down','down','\n'])  #-> serial port
         step = 'EMS'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #-> serial port
@@ -469,6 +480,7 @@ class iLO5():
             time.sleep(self.interval)
             auto.typewrite(['down','\n','up','\n'])  #-> for DL serial port
             step = 'DL serial port'
+            time.sleep(0.5)
             screenshot(self.srv,w,step) 
             time.sleep(self.interval)
 
@@ -482,6 +494,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n','\n','down','\n'])  #-> disable WoL
         step = 'WoL+ASR'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->system option
@@ -492,6 +505,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['\n','down','\n'])  #-> disable HyperThreading
         step = 'HT'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->BIOS
@@ -504,6 +518,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','\n','down','\n'])  #-> disable SRIOV
         step = 'virt'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->BIOS
@@ -512,6 +527,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['\n','\n','down','\n','\n'])  #-> use UEFI pending reboot
         step = 'UEFI'
+        time.sleep(2)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->BIOS
@@ -533,16 +549,22 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n'])  #-> power option
         time.sleep(self.interval)   
+
+        auto.typewrite(['\n','\n','down','down','\n'])  # -> Static High
+        time.sleep(self.interval)
         auto.typewrite(['down','\n','down','down','\n'])  #-> No C-state
         time.sleep(self.interval) 
         auto.typewrite(['down','\n','down','down','\n'])  #-> No package state
-        time.sleep(self.interval)     
+        time.sleep(self.interval)
+        auto.typewrite(['down','down','\n','up','\n'])  # -> Max Perf
+        time.sleep(0.5)
+     
         step = 'power'
         screenshot(self.srv,w,step) 
         auto.typewrite(['esc']) #->BIOS
         time.sleep(self.interval)
-        # auto.press('f12')   
-        # auto.typewrite(['\n','\n'])  #-> save config
+        auto.press('f12')   
+        auto.typewrite(['\n','\n'])  #-> save config
         return 'BIOS configure complete'
 
     def VSOE(self,srv):
@@ -551,8 +573,10 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite('\n')
         time.sleep(self.interval)
-        auto.typewrite(['up','up','\n','\n'])  #-> custom load        
+        auto.typewrite(['up','\n','\n'])  #-> custom load
+        # auto.typewrite(['up','up','\n','\n'])  #-> custom load       
         step = 'workload'
+        time.sleep(0.5)
         screenshot(self.srv,w,step)
         time.sleep(self.interval)
         auto.typewrite(['down','\n'])  #-> system option
@@ -563,6 +587,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n','down','\n'])  #-> serial port 9600
         step = 'EMS'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #-> serial port
@@ -576,6 +601,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n','\n','down','\n'])  #-> disable WoL
         step = 'WoL+ASR'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->system option
@@ -588,6 +614,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['down','\n','down','\n'])  #-> disable SRIOV
         step = 'virt'
+        time.sleep(0.5)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->BIOS
@@ -596,6 +623,7 @@ class iLO5():
         time.sleep(self.interval)
         auto.typewrite(['\n','\n','down','\n','\n'])  #-> use UEFI pending reboot
         step = 'UEFI'
+        time.sleep(2)
         screenshot(self.srv,w,step) 
         time.sleep(self.interval)
         auto.typewrite(['esc']) #->BIOS
@@ -616,17 +644,23 @@ class iLO5():
         auto.typewrite(['esc','esc']) #->BIOS
         time.sleep(self.interval)
         auto.typewrite(['down','down','\n'])  #-> power option
-        time.sleep(self.interval)   
+        time.sleep(self.interval)  
+
+        auto.typewrite(['\n','\n','down','down','\n'])  # -> Static High
+        time.sleep(self.interval)
         auto.typewrite(['down','\n','down','down','\n'])  #-> No C-state
         time.sleep(self.interval) 
         auto.typewrite(['down','\n','down','down','\n'])  #-> No package state
-        time.sleep(self.interval)     
+        time.sleep(self.interval)    
+        auto.typewrite(['down','down','\n','up','\n'])  # -> Max Perf
+        time.sleep(0.5)
+
         step = 'power'
         screenshot(self.srv,w,step) 
         auto.typewrite(['esc']) #->BIOS
         time.sleep(self.interval)
-        # auto.press('f12')   
-        # auto.typewrite(['\n','\n'])  #-> save config
+        auto.press('f12')   
+        auto.typewrite(['\n','\n'])  #-> save config
         return 'BIOS configure complete'
 
 
@@ -654,16 +688,17 @@ def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
     if isinstance(buttonsys,tuple):
         auto.typewrite('\n')
         if osv == "w":
-            ilo.WSOE(srv)
+            result = ilo.WSOE(srv)
         elif osv == "l" or osv == 's':
-            ilo.LSOE(srv)
+            result = ilo.LSOE(srv)
         elif osv == "v":
-            ilo.VSOE(srv)
+            result = ilo.VSOE(srv)
         else:
             return 'Unsupported OS edition'
     else:
         print(buttonsys)
         return buttonsys
+    return result
 
 
 def main():
@@ -726,6 +761,7 @@ if __name__=='__main__':
 
 """
 Change log:
+2019.8.1 GUI button optimize v1.8
 2019.7.31 optimize GUI layout v1.7
 2019.5.9 add g10 LSOE, VSOE v1.6
 2019.5.8 fix screen capture bug v1.5

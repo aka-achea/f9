@@ -15,8 +15,9 @@ layout = [
     # [sg.Text('_'*36,justification='center')],          
     [sg.Text('',size=(36,2),key='output')],          
     # [sg.Text('_'*36,justification='center')],
-    [sg.Button('Go',tooltip='Click to start'), sg.Button('Stop'),
-     sg.Button('Reset',tooltip='Reset to default value'),sg.Button('Help'),sg.Button('Close')]      
+    [sg.Button('Go',tooltip='Click to start',key='go'),sg.Button('Stop',key='stop',disabled=True),
+     sg.Button('Reset',tooltip='Reset to default value',key='reset'),
+     sg.Button('Help'),sg.Button('Exit')]      
 ]      
 
 window = sg.Window('BIOS Config Tool', layout, default_element_size=(40, 1),
@@ -40,7 +41,9 @@ def gf9():
             finally:
                 break
 
-        elif event == 'Go':  
+        elif event == 'go':  
+            window.FindElement('stop').Update(disabled=False)
+            window.FindElement('go').Update(disabled=True)
             if values['hw'] == hw_dict['b10']:
                 ilo = '5'
                 model = 'blade'
@@ -67,7 +70,9 @@ def gf9():
             FLOM = 'yes' if values['FLOM'] else 'no'                
             srv = values['srv']
             window.Element('output').Update(f'Configuring BIOS for {srv}')
-            gobios(wp,ilo,osv,srv,model,FLOM)
+            r = gobios(wp,ilo,osv,srv,model,FLOM)
+            print(r)
+            window.Element('output').Update(r)
 
             # print(result)
             # if result:
@@ -78,23 +83,31 @@ def gf9():
             # else:
             #     window.Element('output').Update(result)
 
-        elif event == 'Stop':  
+        elif event == 'stop':  
+            window.FindElement('stop').Update(disabled=True)
+            window.FindElement('go').Update(disabled=False)            
             try:
-                setupbios.terminate()
                 # setupbios.join()
+                setupbios.terminate()
                 setupbios.close()
                 # break
             except AttributeError as e:
-                # print(e) 
+                print(e) 
                 pass
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 window.Element('output').Update(f'Job Cancelled')
         
-        elif event == 'Reset':
+        elif event == 'reset':         
             try:
                 setupbios.terminate()
                 setupbios.close()
+                window.FindElement('stop').Update(disabled=True)
+                window.FindElement('go').Update(disabled=False)  
             except ValueError:
+                pass
+            except AttributeError as e:
+                print(e) 
                 pass
             window.FindElement('hw').Update(hw_dict['b10'])
             window.FindElement('osv').Update(os_dict['v'])
@@ -107,11 +120,12 @@ def gf9():
                 'Recommend to run on jumpstation after iLO configured',
                 'From iLO remote console, reset the server, maximize console window, place it in up/left corner', 
                 '* Only support run one instance at one time',
+                '* Only support Java Web Start console',
                 '* SAN connection is not disabled in BIOS by this tool',
                 title='Note',icon=os.path.join(wp,'img','f9.ico')
             )
 
-        elif event == 'Close':
+        elif event == 'Exit':
             break
 
     window.Close()
