@@ -44,7 +44,7 @@ def capture(wp,img,trys=10):
     trytime = 1
     while trytime < trys:
         try:
-            button = auto.locateCenterOnScreen(pic,grayscale=True)
+            button = auto.locateCenterOnScreen(pic,grayscale=True,confidence=0.99)
             time.sleep(3)
             # print('Find '+img)
             #print(button)
@@ -55,12 +55,14 @@ def capture(wp,img,trys=10):
             trytime += 1
             print(f'try to locate {img} {str(trytime)}')
             continue
+
         except OSError as e:
             print(e)
             return e
     else:
         print(f"Max tries reach")
         return f"Max tries reach, no find {img}"
+    print(f'Find {img}')
     return button
 
 
@@ -328,11 +330,12 @@ class iLO4():
 
 
 class iLO5():
-    def __init__(self,srv,waitsec=2,model='blade',FLOM='no'):
+    def __init__(self,srv,waitsec=2,model='blade',FLOM='no',autof9=True):
         self.interval = waitsec
         self.model = model
         self.FLOM = FLOM
         self.srv = srv
+        self.autof9 = autof9
         # print(f'{self.srv} server model is {self.model} has {self.FLOM} FlexLOM installed')
 
     def go_bios(self):
@@ -344,9 +347,10 @@ class iLO5():
 
         
     def WSOE(self,srv):
-        self.go_bios()
+        if self.autof9:
+            self.go_bios()
         w = 'WSOE'
-        time.sleep(self.interval)
+        time.sleep(3)
         auto.typewrite('\n')
         time.sleep(self.interval)
         auto.typewrite(['up','\n','\n'])  #-> change workload for general power efficient
@@ -452,9 +456,10 @@ class iLO5():
         return 'BIOS configure complete'
 
     def LSOE(self,srv):
-        self.go_bios()
+        if self.autof9:
+            self.go_bios()
         w = 'LSOE'
-        time.sleep(self.interval)
+        time.sleep(3)
         auto.typewrite('\n')
         time.sleep(self.interval)
         # auto.typewrite(['up','up','\n','\n'])  #-> custom load
@@ -568,9 +573,10 @@ class iLO5():
         return 'BIOS configure complete'
 
     def VSOE(self,srv):
-        self.go_bios()
+        if self.autof9:
+            self.go_bios()
         w = 'VSOE'
-        time.sleep(self.interval)
+        time.sleep(3)
         auto.typewrite('\n')
         time.sleep(self.interval)
         auto.typewrite(['up','\n','\n'])  #-> custom load
@@ -664,40 +670,47 @@ class iLO5():
         return 'BIOS configure complete'
 
 
-def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no'):
+def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no',autof9=True):
+    gdir = os.path.join(wp,srv)
+    if not os.path.exists(gdir):
+        os.makedirs(gdir)
+    os.chdir(gdir)
+
     if ilo == '4':
         ilo = iLO4()
         sysconf = g9sys
     elif ilo == '5':
-        ilo = iLO5(srv=srv,model=model,FLOM=FLOM)
+        ilo = iLO5(srv=srv,model=model,FLOM=FLOM,autof9=autof9)
         sysconf = g10sys
     else:
         return 'Unsupported hardware'
 
     print(f"Configuring BIOS for {os_dict[osv]}")
 
-    buttonf9 = capture(wp,f9)
-    if isinstance(buttonf9,tuple):
-        auto.click(buttonf9)
-        auto.press('f9')
-    else:
-        print(buttonf9)
-        return buttonf9
-
-    buttonsys = capture(wp,sysconf)
-    if isinstance(buttonsys,tuple):
-        auto.typewrite('\n')
-        if osv == "w":
-            result = ilo.WSOE(srv)
-        elif osv == "l" or osv == 's':
-            result = ilo.LSOE(srv)
-        elif osv == "v":
-            result = ilo.VSOE(srv)
+    if autof9:
+        buttonf9 = capture(wp,f9)
+        if isinstance(buttonf9,tuple):
+            auto.click(buttonf9)
+            auto.press('f9')
         else:
-            return 'Unsupported OS edition'
+            print(buttonf9)
+            return buttonf9
+        buttonsys = capture(wp,sysconf)
+        if isinstance(buttonsys,tuple):
+            auto.typewrite('\n')
+        else:
+            print(buttonsys)
+            return buttonsys
+
+    if osv == "w":
+        result = ilo.WSOE(srv)
+    elif osv == "l" or osv == 's':
+        result = ilo.LSOE(srv)
+    elif osv == "v":
+        result = ilo.VSOE(srv)
     else:
-        print(buttonsys)
-        return buttonsys
+        return 'Unsupported OS edition'
+
     return result
 
 
@@ -761,6 +774,7 @@ if __name__=='__main__':
 
 """
 Change log:
+2019.8.2 add Auto F9 disable function v1.9
 2019.8.1 GUI button optimize v1.8
 2019.7.31 optimize GUI layout v1.7
 2019.5.9 add g10 LSOE, VSOE v1.6

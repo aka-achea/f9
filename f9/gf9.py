@@ -5,12 +5,13 @@ from multiprocessing import Process,freeze_support
 from f9 import selectOS,os_dict,hw_dict
 
 wp = os.path.dirname(os.path.realpath(__file__))
-
+version = '1.9'
   
 layout = [           
     [sg.InputCombo(tuple(hw_dict[x] for x in hw_dict.keys()),size=(13, 1),key='hw',default_value=hw_dict['b10'],readonly=True),
      sg.InputCombo(tuple(os_dict[x] for x in os_dict.keys()),size=(16, 1),key='osv',default_value=os_dict['v'],readonly=True) ], 
     [sg.Checkbox('Additional FlexLOM card installed', size=(30,1), default=False,key='FLOM')],
+    [sg.Checkbox('Enable auto F9 recognition', size=(30,1), default=True,key='autof9',tooltip='')],
     [sg.Text('Server Name', size=(10, 1)), sg.InputText(size=(20, 1),key='srv')],    
     # [sg.Text('_'*36,justification='center')],          
     [sg.Text('',size=(36,2),key='output')],          
@@ -20,12 +21,9 @@ layout = [
      sg.Button('Help'),sg.Button('Exit')]      
 ]      
 
-window = sg.Window('BIOS Config Tool', layout, default_element_size=(40, 1),
-             grab_anywhere=False,size=(300,160),icon=os.path.join(wp,'img','f9.ico'))      
+window = sg.Window(f'BIOS Config Tool {version}', layout, default_element_size=(40, 1),
+             grab_anywhere=False,size=(300,200),icon=os.path.join(wp,'img','f9.ico'))      
 
-
-def decision(values):
-    pass
 
 
 def gf9():
@@ -42,8 +40,9 @@ def gf9():
                 break
 
         elif event == 'go':  
+            for x in ['go','hw','osv','FLOM','autof9','srv']:
+                window.FindElement(x).Update(disabled=True)
             window.FindElement('stop').Update(disabled=False)
-            window.FindElement('go').Update(disabled=True)
             if values['hw'] == hw_dict['b10']:
                 ilo = '5'
                 model = 'blade'
@@ -69,10 +68,11 @@ def gf9():
 
             FLOM = 'yes' if values['FLOM'] else 'no'                
             srv = values['srv']
+            autof9 = values['autof9']
+            # print(autof9)
             window.Element('output').Update(f'Configuring BIOS for {srv}')
-            r = gobios(wp,ilo,osv,srv,model,FLOM)
-            print(r)
-            window.Element('output').Update(r)
+            gobios(wp,ilo,osv,srv,model,FLOM,autof9)
+            # window.Element('output').Update('Complete')
 
             # print(result)
             # if result:
@@ -84,34 +84,21 @@ def gf9():
             #     window.Element('output').Update(result)
 
         elif event == 'stop':  
+            for x in ['go','hw','osv','FLOM','autof9','srv']:
+                window.FindElement(x).Update(disabled=False)
             window.FindElement('stop').Update(disabled=True)
-            window.FindElement('go').Update(disabled=False)            
-            try:
-                # setupbios.join()
-                setupbios.terminate()
-                setupbios.close()
-                # break
-            except AttributeError as e:
-                print(e) 
-                pass
-            except ValueError as e:
-                print(e)
-                window.Element('output').Update(f'Job Cancelled')
+            terminate_go()
+            window.Element('output').Update(f'Job Cancelled')
         
-        elif event == 'reset':         
-            try:
-                setupbios.terminate()
-                setupbios.close()
-                window.FindElement('stop').Update(disabled=True)
-                window.FindElement('go').Update(disabled=False)  
-            except ValueError:
-                pass
-            except AttributeError as e:
-                print(e) 
-                pass
+        elif event == 'reset':  
+            terminate_go()   
+            for x in ['go','hw','osv','FLOM','autof9','srv']:
+                window.FindElement(x).Update(disabled=False)    
+            window.FindElement('stop').Update(disabled=True)
             window.FindElement('hw').Update(hw_dict['b10'])
             window.FindElement('osv').Update(os_dict['v'])
             window.FindElement('FLOM').Update(False)
+            window.FindElement('autof9').Update(True)
             window.FindElement('srv').Update('')
             window.FindElement('output').Update('')
 
@@ -122,18 +109,33 @@ def gf9():
                 '* Only support run one instance at one time',
                 '* Only support Java Web Start console',
                 '* SAN connection is not disabled in BIOS by this tool',
-                title='Note',icon=os.path.join(wp,'img','f9.ico')
+                'More details: See README',
+                title='Help',icon=os.path.join(wp,'img','f9.ico')
             )
 
         elif event == 'Exit':
+            terminate_go()
+            window.Element('output').Update(f'Job Cancelled')
             break
 
     window.Close()
 
+def terminate_go():
+    try:
+        # setupbios.join()
+        setupbios.terminate()
+        setupbios.close()
+        # break
+    except AttributeError as e:
+        print(e) 
+        pass
+    except ValueError as e:
+        print(e)
+    
 
-def gobios(wp,ilo,osv,srv,model,FLOM):
+def gobios(wp,ilo,osv,srv,model,FLOM,autof9):
     global setupbios
-    setupbios = Process(target=selectOS,args=(wp,ilo,osv,srv,model,FLOM,))
+    setupbios = Process(target=selectOS,args=(wp,ilo,osv,srv,model,FLOM,autof9,))
     setupbios.start()
     # setupbios.join()
 
@@ -141,4 +143,8 @@ def gobios(wp,ilo,osv,srv,model,FLOM):
 
 if __name__ == "__main__":
     freeze_support()
-    gf9()
+    try:
+        gf9()
+    except KeyboardInterrupt:
+        print('ctrl + c')
+    
