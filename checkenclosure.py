@@ -21,11 +21,12 @@ password = config['setting']['pass']
 
 
 def get_xls_num(xls):
+    '''Get Enclosure list with blades number from inventory'''
     wb = openpyxl.load_workbook(xls,data_only=True)
     sheet = wb['Overview']
     max = sheet.max_row
     edict = {
-        sheet.cell(row=x,column=4).value:
+        sheet.cell(row=x,column=4).value :
         sheet.cell(row=x,column=6).value 
         for x in range(7,max+1)
         }
@@ -33,19 +34,20 @@ def get_xls_num(xls):
     return edict
 
 
-
 def pquery():
+    '''Putty to check enclosure blade '''
     if os.path.exists(puttylog):
         os.remove(puttylog)
-    with open(enlist,'r') as l:
-        for x in l.readlines():
+    with open(enlist,'r') as e:
+        for x in e.readlines():
             oa = x.split('\n')[0]
             cmd = f'echo y | {plink} -ssh -m {puttycmd} -pw {password} {user}@{oa} >> {puttylog} 2>&1'
             # print(cmd)
             subprocess.run(cmd,shell=True)
-    return True
+
 
 def filter_log(edict):
+    '''Filter putty log and compare with inventory'''
     if os.path.exists(filterlog):
         os.remove(filterlog)
     ndict = {}
@@ -63,7 +65,7 @@ def filter_log(edict):
                     ndict[ename] = total.split(' ')[1]
                     # print(edict[ename])
                     if int(ndict[ename]) != int(edict[ename]):
-                        print('!!!!!!!!!!! Blade number changed !!!!!!!!!!!',file=o)
+                        print(f'!!!!!!!!!!! Blade number from {edict[ename]} to {ndict[ename]} !!!!!!!!!!!',file=o)
                     else:
                         pass
                         # print('SAME',file=o)
@@ -72,7 +74,11 @@ def filter_log(edict):
                     pass
 
 
-if __name__ == "__main__":
+def main():
     edict = get_xls_num(xls)
-    # pquery()
+    pquery()
     filter_log(edict)
+
+
+if __name__ == "__main__":
+    main()
