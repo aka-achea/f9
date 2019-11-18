@@ -1,3 +1,5 @@
+#version:20191118
+
 import os
 import PySimpleGUI as sg      
 from multiprocessing import Process,freeze_support
@@ -5,10 +7,10 @@ from multiprocessing import Process,freeze_support
 from f9 import selectOS,os_dict,hw_dict
 
 wp = os.path.dirname(os.path.realpath(__file__))
-version = '1.9'
+version = '2.0'
   
 layout = [           
-    [sg.InputCombo(tuple(hw_dict[x] for x in hw_dict.keys()),size=(13, 1),key='hw',default_value=hw_dict['b10'],readonly=True),
+    [sg.InputCombo(tuple(hw_dict[x] for x in hw_dict.keys()),size=(13, 1),key='hw',default_value=hw_dict['460g10'],readonly=True),
      sg.InputCombo(tuple(os_dict[x] for x in os_dict.keys()),size=(16, 1),key='osv',default_value=os_dict['v'],readonly=True) ], 
     [sg.Checkbox('Additional FlexLOM card installed', size=(30,1), default=False,key='FLOM')],
     [sg.Checkbox('Enable auto F9 recognition', size=(30,1), default=True,key='autof9',tooltip='')],
@@ -43,15 +45,18 @@ def gf9():
             for x in ['go','hw','osv','FLOM','autof9','srv']:
                 window.FindElement(x).Update(disabled=True)
             window.FindElement('stop').Update(disabled=False)
-            if values['hw'] == hw_dict['b10']:
+            if values['hw'] == hw_dict['460g10']:
                 ilo = '5'
                 model = 'blade'
-            elif values['hw'] == hw_dict['r10']:
+            elif values['hw'] == hw_dict['380g10']:
                 ilo = '5'
                 model = 'rack mounted'            
-            elif values['hw'] == hw_dict['b9']:
+            elif values['hw'] == hw_dict['460g9']:
                 ilo = '4'
                 model = 'blade'
+            elif values['hw'] == hw_dict['580g10']:
+                ilo = '5'
+                model = 'rack mounted'
             else:
                 pass
 
@@ -64,7 +69,7 @@ def gf9():
             elif values['osv'] == os_dict['s']:  
                 osv = 's'
             else:
-                pass
+                pass       
 
             FLOM = 'yes' if values['FLOM'] else 'no'                
             srv = values['srv']
@@ -95,7 +100,7 @@ def gf9():
             for x in ['go','hw','osv','FLOM','autof9','srv']:
                 window.FindElement(x).Update(disabled=False)    
             window.FindElement('stop').Update(disabled=True)
-            window.FindElement('hw').Update(hw_dict['b10'])
+            window.FindElement('hw').Update(hw_dict['460g10'])
             window.FindElement('osv').Update(os_dict['v'])
             window.FindElement('FLOM').Update(False)
             window.FindElement('autof9').Update(True)

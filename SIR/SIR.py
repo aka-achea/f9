@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #coding:utf-8
 # tested in Win
-# Version: 20190619
+# Version: 20191118
 
 
 import time,os,sys,argparse
@@ -20,9 +20,10 @@ IDX2/A24/GSHFRB024A2/Bay9
 wp = os.path.dirname(os.path.realpath(__file__))
 
 model_dict = {
-    'bl9':('813198-B21','ProLiant BL460c Gen9'),
-    'bl10':('','ProLiant BL460c Gen10'),
-    'dl10':('868703-B21','ProLiant DL380 Gen10')
+    '460g9':('813198-B21','ProLiant BL460c Gen9'),
+    '460g10':('863442-B21','ProLiant BL460c Gen10'),
+    '380g10':('868703-B21','ProLiant DL380 Gen10'),
+    '580g10':('869854-B21','ProLiant DL580 Gen10')
 }
 
 def sir(srv_dict:dict):
@@ -140,15 +141,19 @@ def batch():
             name = sheet.cell(row=x,column=7).value
             SN = sheet.cell(row=x,column=8).value
         
-            if m == 'ProLiant BL460 Gen9':
-                model = model_dict['bl9']
-                loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
-            elif m == 'ProLiant BL460 Gen10':
-                model = model_dict['bl10']
+
+            if m == 'ProLiant BL460 Gen10':
+                model = model_dict['460g10']
                 loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
             elif m == 'ProLiant DL380 Gen10':
-                model = model_dict['dl10']
+                model = model_dict['380g10']
                 loc = f'{DC}/{Rack}'
+            elif m == 'ProLiant BL460 Gen9':
+                model = model_dict['460g9']
+                loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
+            elif m == 'ProLiant DL580 Gen10':
+                model = model_dict['580g10']
+                loc = f'{DC}/{Rack}' 
             else:
                 print('invalid input')
 
@@ -164,7 +169,7 @@ def batch():
     try:
         wb.save(xls)
     except PermissionError as e:
-        print(e)
+        # print(e)
         print('Is file being opened?')
 
 

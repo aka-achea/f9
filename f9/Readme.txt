@@ -5,8 +5,9 @@ Based on 2819547 25.0 FI_Hardware_Preparation_of_HP_ProLiant_Servers_TOP
 
 Supported Hardware:
 HP BL460 G9
-BL460 G10
-DL380 G10
+HP BL460 G10
+HP DL380 G10
+HP DL580 G10
 
 Supported OS:
 WSOE (Windows)

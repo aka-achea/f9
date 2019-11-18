@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 #coding:utf-8
+#version:20191118
+
 """
 BIOS Setup Automation Tool
 """
@@ -25,9 +27,10 @@ os_dict = {
 }
  
 hw_dict = {
-    'r10':'HP DL380 G10',
-    'b10':'HP BL460 G10',
-    'b9':'HP BL460 G9'
+    '380g10':'HP DL380 G10',
+    '460g10':'HP BL460 G10',
+    '460g9':'HP BL460 G9',
+    '580g10':'HP DL580 G10'
 }
 
 
@@ -459,13 +462,13 @@ class iLO5():
         if self.autof9:
             self.go_bios()
         w = 'LSOE'
-        time.sleep(3)
+        time.sleep(4)
         auto.typewrite('\n')
         time.sleep(self.interval)
-        # auto.typewrite(['up','up','\n','\n'])  #-> custom load
-        auto.typewrite(['up','\n','\n'])  #-> custom load   
+        auto.typewrite(['up','up','\n','\n'])  #-> custom load
+        # auto.typewrite(['up','\n','\n'])  #-> change workload for general power efficient   
         step = 'workload'
-        time.sleep(0.5)
+        time.sleep(1)
         screenshot(self.srv,w,step)
         time.sleep(self.interval)
         auto.typewrite(['down','\n'])  #-> system option
@@ -576,13 +579,13 @@ class iLO5():
         if self.autof9:
             self.go_bios()
         w = 'VSOE'
-        time.sleep(3)
+        time.sleep(4)
         auto.typewrite('\n')
         time.sleep(self.interval)
-        auto.typewrite(['up','\n','\n'])  #-> custom load
-        # auto.typewrite(['up','up','\n','\n'])  #-> custom load       
+        # auto.typewrite(['up','\n','\n'])  #-> change workload for general power efficient
+        auto.typewrite(['up','up','\n','\n'])  #-> custom load       
         step = 'workload'
-        time.sleep(0.5)
+        time.sleep(1)
         screenshot(self.srv,w,step)
         time.sleep(self.interval)
         auto.typewrite(['down','\n'])  #-> system option
@@ -710,7 +713,7 @@ def selectOS(wp,ilo,osv,srv,model='blade',FLOM='no',autof9=True):
         result = ilo.VSOE(srv)
     else:
         return 'Unsupported OS edition'
-
+    print(result)
     return result
 
 
