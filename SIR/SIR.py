@@ -140,15 +140,13 @@ def batch():
             m = sheet.cell(row=x,column=6).value
             name = sheet.cell(row=x,column=7).value
             SN = sheet.cell(row=x,column=8).value
-        
-
-            if m == 'ProLiant BL460 Gen10':
+            if m == 'ProLiant BL460c Gen10':
                 model = model_dict['460g10']
                 loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
             elif m == 'ProLiant DL380 Gen10':
                 model = model_dict['380g10']
                 loc = f'{DC}/{Rack}'
-            elif m == 'ProLiant BL460 Gen9':
+            elif m == 'ProLiant BL460c Gen9':
                 model = model_dict['460g9']
                 loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
             elif m == 'ProLiant DL580 Gen10':

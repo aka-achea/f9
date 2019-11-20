@@ -7,6 +7,8 @@ import paramiko
 from pprint import pprint
 import pandas as pd
 import csv
+import openpyxl 
+import webbrowser
 
 confile = r'E:\ptool\ilo.ini'
 
@@ -18,17 +20,19 @@ adm = config['login']['adm']
 newuser = config['user']['user']
 newuserpd = config['user']['password']
 logfile = config['setting']['log']
-csvfile = config['setting']['csv']
+xls = config['setting']['xlsx']
 
 
 paramiko.util.log_to_file(logfile,level='DEBUG')
 
-def setup_ilo(host,adm,password):
+
+def create_ilo_user(host,adm,pword):
     '''Create iLO user, get SN, Model'''
     sn,model = '',''
     try:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
+        print(host,pword)
         client.connect(hostname=host,username=adm,password=pword,
                         allow_agent=False,look_for_keys=False)
         cmd = f'create /map1/accounts1 username={newuser} password={newuserpd} group=admin,config,oemHPE_rc,oemHPE_power,oemHPE_vm'
@@ -52,18 +56,21 @@ def setup_ilo(host,adm,password):
     return sn,model
 
 
-# df = pd.read_csv(csv)
-# a = df.loc[df.SIR=='Nan']
-# print(a)
+def setup_ilo():
+    wb = openpyxl.load_workbook(xls)
+    sheet = wb['hw']
+    for x in range(2,sheet.max_row+1):
+        if sheet.cell(row=x,column=9).value != 'Y':
+            host = sheet.cell(row=x,column=10).value
+            pword = sheet.cell(row=x,column=11).value
+            sn,model = create_ilo_user(host,adm,pword)
+            # print(sn,model)
+            sheet.cell(row=x,column=8).value = sn
+            sheet.cell(row=x,column=6).value = model
+            url = f'https://{host}'
+            webbrowser.open(url)
+    wb.save(xls)
 
-# sn,model = setup_ilo(host,adm,pword)
-# print(sn,model)
 
-
-with open(csvfile,w) as cf:
-    reader = csv.DictReader(cf)
-    for row in reader:
-        if row['SIR'] == '':
-            host = row['iLO']
-            pword = row['Pass']
-            print(host,pword)
+if __name__ == "__main__":
+    setup_ilo()
