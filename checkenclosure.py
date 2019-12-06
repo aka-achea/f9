@@ -2,6 +2,8 @@
 # coding:utf-8
 # tested in Win
 
+__version__ = 20191206
+
 import re,subprocess,os,configparser,openpyxl
 
 
