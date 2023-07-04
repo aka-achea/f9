@@ -60,6 +60,7 @@ def filter_log(edict):
                     ename = x.split()[0][:-3].upper()
                     if ename == 'SHPFRB009J32': ename = 'SHPFRB009J3'
                     if ename == 'OA-9457A55F5': ename = 'SICFRB005CE2'
+                    if ename == 'OA-68B599CB5': ename = 'SHPFRB007J1'
                     print(ename,file=o)
                 elif re.search('Totals',x):
                     total = x.split('\n')[0]

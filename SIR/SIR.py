@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 #coding:utf-8
 # tested in Win
-# Version: 20191118
+
+__Version__ = 20211230
 
 
 import time,os,sys,argparse
@@ -17,13 +18,16 @@ Area/Building/Room:
 IDX2/A24/GSHFRB024A2/Bay9
 """
 
-wp = os.path.dirname(os.path.realpath(__file__))
+# wp = os.path.dirname(os.path.realpath(__file__))
+wp = r'E:\ptool\SIR'
 
 model_dict = {
-    '460g9':('813198-B21','ProLiant BL460c Gen9'),
-    '460g10':('863442-B21','ProLiant BL460c Gen10'),
+    '460g9':('813198-B21','ProLiant BL460 Gen9'),
+    '460g10':('863442-B21','ProLiant BL460 Gen10'),
     '380g10':('868703-B21','ProLiant DL380 Gen10'),
-    '580g10':('869854-B21','ProLiant DL580 Gen10')
+    '580g10':('869854-B21','ProLiant DL580 Gen10'),
+    'nutanix':('P18230-B21',"ProLiant DX360 Gen10"),
+    's480g10':('871942-B21','HPE Synergy 480 Gen10')
 }
 
 def sir(srv_dict:dict):
@@ -75,7 +79,7 @@ def sir(srv_dict:dict):
         word.Quit()
     except :
         # print(e)
-        print('PDF already created')
+        print(f"{srv_dict['name']} already created")
 
 
 def select():
@@ -131,22 +135,29 @@ def batch():
     wb = openpyxl.load_workbook(xls)
     sheet = wb['hw']
     for x in range(2,sheet.max_row+1):
-        if sheet.cell(row=x,column=9).value != 'Y':
+        if sheet.cell(row=x,column=11).value != 'Y':  # SIR mark Y
             site = sheet.cell(row=x,column=1).value
             DC = sheet.cell(row=x,column=2).value
             Rack = sheet.cell(row=x,column=3).value
             Enclosure = sheet.cell(row=x,column=4).value
             bay = sheet.cell(row=x,column=5).value
-            m = sheet.cell(row=x,column=6).value
+            m = sheet.cell(row=x,column=6).value  # model
             name = sheet.cell(row=x,column=7).value
+            print(f'SIR {name}')
             SN = sheet.cell(row=x,column=8).value
-            if m == 'ProLiant BL460c Gen10':
+            if m == "ProLiant DX360 Gen10":
+                model = model_dict['nutanix']
+                loc = f'{DC}/{Rack}'
+            elif m == "HPE Synergy 480 Gen10":
+                model = model_dict['s480g10']
+                loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
+            elif m == 'ProLiant BL460 Gen10':
                 model = model_dict['460g10']
                 loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
             elif m == 'ProLiant DL380 Gen10':
                 model = model_dict['380g10']
                 loc = f'{DC}/{Rack}'
-            elif m == 'ProLiant BL460c Gen9':
+            elif m == 'ProLiant BL460 Gen9':
                 model = model_dict['460g9']
                 loc = f'{DC}/{Rack}/{Enclosure}/Bay{bay}'
             elif m == 'ProLiant DL580 Gen10':
@@ -154,7 +165,7 @@ def batch():
                 loc = f'{DC}/{Rack}' 
             else:
                 print('invalid input')
-
+                sys.exit()
             srv_dict = {
                 'name':name,
                 'SN':SN,
@@ -163,12 +174,12 @@ def batch():
                 'model':model
             }
             sir(srv_dict)
-            sheet.cell(row=x,column=9).value = 'Y'
-    try:
-        wb.save(xls)
-    except PermissionError as e:
-        # print(e)
-        print('Is file being opened?')
+            sheet.cell(row=x,column=11).value = 'Y'
+            try:
+                wb.save(xls)
+            except PermissionError as e:
+                # print(e)
+                print('Is file being opened?')
 
 
 def main():
